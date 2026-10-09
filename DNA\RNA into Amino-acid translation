@@ -1,0 +1,94 @@
+#implemnet an application that is able to convert the coding region of a gene into an amino acid sequence
+
+#use the genetic code table
+CODON_TABLE = {
+    #U Row
+    "UUU": "Phe", "UUC": "Phe", "UUA": "Leu", "UUG": "Leu",
+    "UCU": "Ser", "UCC": "Ser", "UCA": "Ser", "UCG": "Ser",
+    "UAU": "Tyr", "UAC": "Tyr", "UAA": "Stop", "UAG": "Stop",
+    "UGU": "Cys", "UGC": "Cys", "UGA": "Stop", "UGG": "Trp",
+    
+    #C Row
+    "CUU": "Leu", "CUC": "Leu", "CUA": "Leu", "CUG": "Leu",
+    "CCU": "Pro", "CCC": "Pro", "CCA": "Pro", "CCG": "Pro",
+    "CAU": "His", "CAC": "His", "CAA": "Gln", "CAG": "Gln",
+    "CGU": "Arg", "CGC": "Arg", "CGA": "Arg", "CGG": "Arg",
+    
+    #A Row
+    "AUU": "Ile", "AUC": "Ile", "AUA": "Ile", "AUG": "Met",
+    "ACU": "Thr", "ACC": "Thr", "ACA": "Thr", "ACG": "Thr",
+    "AAU": "Asn", "AAC": "Asn", "AAA": "Lys", "AAG": "Lys",
+    "AGU": "Ser", "AGC": "Ser", "AGA": "Arg", "AGG": "Arg",
+    
+    #G Row
+    "GUU": "Val", "GUC": "Val", "GUA": "Val", "GUG": "Val",
+    "GCU": "Ala", "GCC": "Ala", "GCA": "Ala", "GCG": "Ala",
+    "GAU": "Asp", "GAC": "Asp", "GAA": "Glu", "GAG": "Glu",
+    "GGU": "Gly", "GGC": "Gly", "GGA": "Gly", "GGG": "Gly"
+}
+
+AMINO_ACID_TO_PROTEIN = {
+    "Ala": "A", "Arg": "R", "Asn": "N", "Asp": "D",
+    "Cys": "C", "Gln": "Q", "Glu": "E", "Gly": "G",
+    "His": "H", "Ile": "I", "Leu": "L", "Lys": "K",
+    "Met": "M", "Phe": "F", "Pro": "P", "Ser": "S",
+    "Thr": "T", "Trp": "W", "Tyr": "Y", "Val": "V",
+}
+
+
+def translate_coding_sequence(sequence: str, stop_at_stop_codon: bool = True) -> list[str]:
+    
+    rna_seq = sequence.strip().upper().replace("T", "U")
+    
+    valid_bases = {"A", "U", "C", "G"}
+    invalid_chars = set(rna_seq) - valid_bases
+    if invalid_chars:
+        raise ValueError(f"Sequence contains invalid bases: {invalid_chars}")
+
+
+    remainder = len(rna_seq) % 3
+    if remainder != 0:
+        print(f"Warning: Sequence length ({len(rna_seq)}) is not a multiple of 3. Truncating last {remainder} base(s).")
+        rna_seq = rna_seq[:len(rna_seq) - remainder]
+
+    protein = []
+
+    
+    for i in range(0, len(rna_seq), 3):
+        codon = rna_seq[i : i + 3]
+        amino_acid = CODON_TABLE[codon]
+        
+        if amino_acid == "Stop":
+            if stop_at_stop_codon:
+                break
+        
+        protein.append(amino_acid)
+
+    return protein
+
+
+def amino_acids_to_protein(amino_acids: list[str]) -> str:
+    protein = []
+
+    for amino_acid in amino_acids:
+        if amino_acid == "Stop":
+            break
+        protein.append(AMINO_ACID_TO_PROTEIN.get(amino_acid, "X"))
+
+    return "".join(protein)
+
+
+if __name__ == "__main__":
+    dna_gene = "ATGTTTUCUUGGUAA"
+    amino_acid1 = translate_coding_sequence(dna_gene)
+    protein1 = amino_acids_to_protein(amino_acid1)
+    print("Input DNA Sequence: ", dna_gene)
+    print("Amino Acid Chain:   ", " - ".join(amino_acid1))
+    print("Protein Sequence:   ", protein1)
+    
+    rna_gene = "AUGGCCAUGGCGCCCAGAACUUGA"
+    amino_acid2 = translate_coding_sequence(rna_gene)
+    protein2 = amino_acids_to_protein(amino_acid2)
+    print("\nInput RNA Sequence: ", rna_gene)
+    print("Amino Acid Chain:   ", " - ".join(amino_acid2))
+    print("Protein Sequence:   ", protein2)
